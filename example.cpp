@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
   listener_2 = std::move(listener_1);
   
-  // A has one listener, B has one listeners
+  // A has one listener, B has one listener
   A.mouse_down(2, 0);
   B.mouse_down(0, 2);
 }
