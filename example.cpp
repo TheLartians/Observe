@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
   listener_1.observe(A.clicked,[](float x,float y){ std::cout << "l1 : A clicked at " << x << ", " << y << std::endl; });
   listener_2.observe(B.clicked,[](float x,float y){ std::cout << "l2 : B clicked at " << x << ", " << y << std::endl; });
   
+  // Anonymous listener
   B.clicked.connect([](float x,float y){ std::cout << "   : B clicked at " << x << ", " << y << std::endl; });
   
   {
