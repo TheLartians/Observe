@@ -1,4 +1,4 @@
-# events
+# lars::events
 
 A c++11 event-listener system template. Usage example:
 
