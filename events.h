@@ -10,7 +10,7 @@ namespace lars{
   
   class listener{
     public:
-    struct base{};
+    struct base{ virtual ~base(){} };
     
     listener(){}
     listener(listener &&other){ std::swap(data,other.data); }
