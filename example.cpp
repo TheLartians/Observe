@@ -11,7 +11,9 @@ struct gui_element{
 
 int main(int argc, char **argv) {
   gui_element A,B;
-  click_event::listener listener_1,listener_2;
+  click_event::listener listener_1;
+  // pseudo-base class can hold any type of listener
+  lars::listener listener_2;
   
   listener_1.observe(A.clicked,[](float x,float y){ std::cout << "l1 : A clicked at " << x << ", " << y << std::endl; });
   listener_2.observe(B.clicked,[](float x,float y){ std::cout << "l2 : B clicked at " << x << ", " << y << std::endl; });
@@ -20,14 +22,14 @@ int main(int argc, char **argv) {
   
   {
   auto temporary_listener = A.clicked.create_listener([](float x,float y){ std::cout << "tmp: A clicked at " << x << ", " << y << std::endl; });
-  // A has two listeners, B has two listeners
+  std::cout << "A has two listeners, B has two listeners" << std::endl;
   A.mouse_down(1, 0);
   B.mouse_down(0, 1);
   }
 
   listener_2 = std::move(listener_1);
   
-  // A has one listener, B has one listeners
+  std::cout << "A has one listener, B has one listener" << std::endl;
   A.mouse_down(2, 0);
   B.mouse_down(0, 2);
 }

@@ -6,12 +6,38 @@
 
 namespace lars{
   
+  template <typename ... Args> struct event;
+  
+  class listener{
+    public:
+    struct base{};
+    
+    listener(){}
+    listener(listener &&other){ std::swap(data,other.data); }
+    template <typename L> listener(L && l):data(new L(std::move(l))){ }
+    
+    listener & operator=(const listener &other) = delete;
+    listener & operator=(listener &&other){
+      data.reset();
+      std::swap(data,other.data);
+      return *this;
+    }
+    template <typename L> listener & operator=(L && l){ data.reset(new L(std::move(l))); return *this; }
+    
+    template <typename H,typename ... Args> void observe(event<Args...> & the_event,H handler){
+      data.reset(new typename event<Args...>::listener(the_event,handler));
+    }
+    
+    private:
+    std::unique_ptr<base> data;
+  };
+  
   template <typename ... Args> struct event:private std::shared_ptr<std::list<std::function<void(Args...)>>>{
     
     using handler = std::function<void(Args...)>;
     using listener_list = std::list<handler>;
     
-    struct listener{
+    struct listener:public lars::listener::base{
       std::weak_ptr<listener_list> the_event;
       typename listener_list::iterator it;
       
