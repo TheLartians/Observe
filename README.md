@@ -3,8 +3,11 @@
 A c++11 event-listener system template. Usage example:
 
 ```
-$ g++ -std=c++11 example.cpp 
-$ ./a.out 
+$ mkdir build
+$ cd build
+$ cmake .. 
+$ make
+$ ./mouse_events
 A has two listeners, B has two listeners
 l1 : A clicked at 1, 0
 tmp: A clicked at 1, 0
