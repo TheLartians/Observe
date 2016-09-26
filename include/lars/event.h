@@ -121,12 +121,12 @@ namespace lars{
   template <class T> class ObservableValue{
     T value;
     public:
-    Event<> on_change;
+    Event<const T &> on_change;
     
     template <typename ... Args> ObservableValue(Args ... args):value(args...){}
     
     const T & get()const{ return value; }
-    void set(const T &other){ value = other; on_change.notify(); }
+    void set(const T &other){ value = other; on_change.notify(value); }
   };
   
   template <class T> using SharedObservableValue = std::shared_ptr<ObservableValue<T>>;
