@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <list>
+#include <vector>
 
 namespace lars{
   
@@ -25,8 +26,8 @@ namespace lars{
     
     template <typename L> Listener & operator=(L && l){ data.reset(new L(std::move(l))); return *this; }
     
-    template <typename H,typename ... Args> void observe(Event<Args...> & the_event,H Handler){
-      data.reset(new typename Event<Args...>::Listener(the_event,Handler));
+    template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
+      data.reset(new typename Event<Args...>::Listener(event,handler));
     }
     
     void reset(){ data.reset(); }
@@ -34,6 +35,17 @@ namespace lars{
     
     private:
     std::unique_ptr<Base> data;
+  };
+  
+  class MultiListener{
+  protected:
+    std::vector<Listener> listeners;
+  public:
+    void insert_listener(const Listener & l){ listeners.emplace_back(l); }
+    template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
+      listeners.emplace_back();
+      listeners.back().observe(event,handler);
+    }
   };
   
   template <typename ... Args> class Event:private std::shared_ptr<Event<Args...>*>{
@@ -126,6 +138,7 @@ namespace lars{
     template <typename ... Args> ObservableValue(Args ... args):value(args...){}
     
     const T & get()const{ return value; }
+    operator const T &()const{ return get(); }
     void set(const T &other){ value = other; on_change.notify(value); }
   };
   
@@ -134,6 +147,7 @@ namespace lars{
   template <class T,typename ... Args> SharedObservableValue<T> make_shared_observable_value(Args ... args){
     return std::make_shared<ObservableValue<T>>(args...);
   }
+  
   
 }
 
