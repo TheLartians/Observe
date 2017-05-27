@@ -41,7 +41,7 @@ namespace lars{
   protected:
     std::vector<Listener> listeners;
   public:
-    void insert_listener(const Listener & l){ listeners.emplace_back(l); }
+    void insert_listener(Listener && l){ listeners.emplace_back(std::move(l)); }
     template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
       listeners.emplace_back();
       listeners.back().observe(event,handler);
