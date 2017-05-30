@@ -9,25 +9,25 @@ namespace lars{
   
   template <typename ... Args> class Event;
   
-  class Listener{
+  class Observer{
     public:
     struct Base{ virtual ~Base(){} };
     
-    Listener(){}
-    Listener(Listener &&other){ std::swap(data,other.data); }
-    template <typename L> Listener(L && l):data(new L(std::move(l))){ }
+    Observer(){}
+    Observer(Observer &&other){ std::swap(data,other.data); }
+    template <typename L> Observer(L && l):data(new L(std::move(l))){ }
     
-    Listener & operator=(const Listener &other) = delete;
-    Listener & operator=(Listener &&other){
+    Observer & operator=(const Observer &other) = delete;
+    Observer & operator=(Observer &&other){
       data.reset();
       std::swap(data,other.data);
       return *this;
     }
     
-    template <typename L> Listener & operator=(L && l){ data.reset(new L(std::move(l))); return *this; }
+    template <typename L> Observer & operator=(L && l){ data.reset(new L(std::move(l))); return *this; }
     
     template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
-      data.reset(new typename Event<Args...>::Listener(event,handler));
+      data.reset(new typename Event<Args...>::Observer(event,handler));
     }
     
     void reset(){ data.reset(); }
@@ -37,56 +37,56 @@ namespace lars{
     std::unique_ptr<Base> data;
   };
   
-  class MultiListener{
+  class MultiOberserver{
   protected:
-    std::vector<Listener> listeners;
+    std::vector<Observer> observers;
   public:
-    void insert_listener(Listener && l){ listeners.emplace_back(std::move(l)); }
+    void add_observer(Observer && l){ observers.emplace_back(std::move(l)); }
     template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
-      listeners.emplace_back();
-      listeners.back().observe(event,handler);
+      observers.emplace_back();
+      observers.back().observe(event,handler);
     }
   };
   
   template <typename ... Args> class Event:private std::shared_ptr<Event<Args...>*>{
     
     using Handler = std::function<void(Args...)>;
-    using ListenerList = std::list<Handler>;
-    using iterator = typename ListenerList::iterator;
+    using ObserverList = std::list<Handler>;
+    using iterator = typename ObserverList::iterator;
     
-    mutable ListenerList listeners;
+    mutable ObserverList observers;
 
     iterator insert_handler(Handler h)const{
-      return listeners.insert(listeners.end(),h);
+      return observers.insert(observers.end(),h);
     }
     
     void erase_handler(const iterator &it)const{
-      listeners.erase(it);
+      observers.erase(it);
     }
     
     public:
     
-    struct Listener:public lars::Listener::Base{
+    struct Observer:public lars::Observer::Base{
       std::weak_ptr<Event*> the_event;
-      typename ListenerList::iterator it;
+      typename ObserverList::iterator it;
       
-      Listener(){ }
+      Observer(){ }
       
-      Listener(const Event & s,Handler f){
+      Observer(const Event & s,Handler f){
         observe(s,f);
       }
       
-      Listener(Listener &&other){
+      Observer(Observer &&other){
         the_event = other.the_event;
         it = other.it;
         other.the_event.reset();
       }
       
-      Listener(const Listener &other) = delete;
+      Observer(const Observer &other) = delete;
       
-      Listener & operator=(const Listener &other) = delete;
+      Observer & operator=(const Observer &other) = delete;
       
-      Listener & operator=(Listener &&other){
+      Observer & operator=(Observer &&other){
         reset();
         the_event = other.the_event;
         it = other.it;
@@ -105,7 +105,7 @@ namespace lars{
         the_event.reset();
       }
       
-      ~Listener(){ reset(); }
+      ~Observer(){ reset(); }
     };
     
     Event():std::shared_ptr<Event*>(std::make_shared<Event*>(this)){ }
@@ -117,11 +117,11 @@ namespace lars{
     Event & operator=(Event &&) = default;
     
     void notify(Args... args)const{
-      for(auto &f:listeners) f(args...);
+      for(auto &f:observers) f(args...);
     }
     
-    Listener create_listener(Handler h)const{
-      return Listener(*this,h);
+    Observer create_observer(Handler h)const{
+      return Observer(*this,h);
     }
     
     void connect(Handler h)const{
