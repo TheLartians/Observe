@@ -134,12 +134,13 @@ namespace lars{
     T value;
     public:
     Event<const T &> on_change;
+    std::function<void(T &)> formatter = [](T &){};
     
     template <typename ... Args> ObservableValue(Args ... args):value(args...){}
     
     const T & get()const{ return value; }
     operator const T &()const{ return get(); }
-    void set(const T &other){ value = other; on_change.notify(value); }
+    void set(const T &other){ value = other; formatter(value); on_change.notify(value); }
   };
   
   template <class T> using SharedObservableValue = std::shared_ptr<ObservableValue<T>>;
