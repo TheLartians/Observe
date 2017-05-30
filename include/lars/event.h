@@ -134,7 +134,7 @@ namespace lars{
     T value;
     public:
     Event<const T &> on_change;
-    std::function<void(T &)> formatter = [](T &){};
+    std::function<void(T &)> converter = [](T &){};
     
     template <typename ... Args> ObservableValue(Args ... args):value(args...){}
     
