@@ -4,6 +4,8 @@
 #include <memory>
 #include <list>
 #include <vector>
+#include <utility>
+#include <stdexcept>
 
 namespace lars{
   
@@ -128,25 +130,48 @@ namespace lars{
       insert_handler(h);
     }
     
+    void transfer_observers_to(Event &other){
+      for(auto &observer:observers) observer->the_event = &other;
+      other.observers.splice(other.observers.end(),observers.begin(),observers.end());
+    }
+    
   };
   
-  template <class T> class ObservableValue{
+  class ObservableValueBase{ };
+  
+  template <class T,class Base = ObservableValueBase> class ObservableValue:public Base{
     T value;
     public:
     Event<const T &> on_change;
     std::function<void(T &)> converter = [](T &){};
     
-    template <typename ... Args> ObservableValue(Args ... args):value(args...){}
+    template <typename ... Args> ObservableValue(Args ... args):value(std::forward<Args>(args)...){}
     
     const T & get()const{ return value; }
+    
     operator const T &()const{ return get(); }
+    
     void set(const T &other){ value = other; converter(value); on_change.notify(value); }
+    void set(T &&other){ value = other; converter(value); on_change.notify(value); }
+    ObservableValue & operator=(const T &other){ set(other); }
+    ObservableValue & operator=(T &&other){ set(other); }
+    
+    void set_silently(const T &other){ value = other; converter(value); }
+    void set_silently(T &&other){ value = other; converter(value); }
   };
   
-  template <class T> using SharedObservableValue = std::shared_ptr<ObservableValue<T>>;
+  template <class T,class Base = ObservableValueBase> class SharedObservableValue:public std::shared_ptr<ObservableValue<T,Base>>{
+  public:
+    using std::shared_ptr<ObservableValue<T,Base>>::shared_ptr;
+    
+    void replace_and_transfer_observers(const std::shared_ptr<ObservableValue<T,Base>> &other){
+      this->get()->on_change.transfer_observers_to(other->on_change);
+      *this = other;
+    }
+  };
   
-  template <class T,typename ... Args> SharedObservableValue<T> make_shared_observable_value(Args ... args){
-    return std::make_shared<ObservableValue<T>>(args...);
+  template <class T,typename ... Args,class Base = ObservableValueBase> SharedObservableValue<T,Base> make_shared_observable_value(Args ... args){
+    return std::make_shared<ObservableValue<T,Base>>(args...);
   }
   
   
