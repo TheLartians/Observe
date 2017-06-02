@@ -5,7 +5,6 @@
 #include <list>
 #include <vector>
 #include <utility>
-#include <stdexcept>
 
 namespace lars{
   
@@ -137,12 +136,13 @@ namespace lars{
     
   };
   
-  class ObservableValueBase{ };
+  struct ObservableValueBase{
+    Event<> on_change;
+  };
   
   template <class T,class Base = ObservableValueBase> class ObservableValue:public Base{
     T value;
     public:
-    Event<const T &> on_change;
     std::function<void(T &)> converter = [](T &){};
     
     template <typename ... Args> ObservableValue(Args ... args):value(std::forward<Args>(args)...){}
@@ -151,8 +151,8 @@ namespace lars{
     
     operator const T &()const{ return get(); }
     
-    void set(const T &other){ value = other; converter(value); on_change.notify(value); }
-    void set(T &&other){ value = other; converter(value); on_change.notify(value); }
+    void set(const T &other){ value = other; converter(value); Base::on_change.notify(); }
+    void set(T &&other){ value = other; converter(value); Base::on_change.notify(); }
     ObservableValue & operator=(const T &other){ set(other); }
     ObservableValue & operator=(T &&other){ set(other); }
     
