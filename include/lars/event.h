@@ -151,8 +151,8 @@ namespace lars{
     
     operator const T &()const{ return get(); }
     
-    void set(const T &other){ value = other; converter(value); Base::on_change.notify(); }
-    void set(T &&other){ value = other; converter(value); Base::on_change.notify(); }
+    void set(const T &other){ auto tmp = other; converter(tmp); if(value != tmp){ std::swap(value,tmp); Base::on_change.notify(); } }
+    void set(T &&other){ value = std::forward<T>(other); converter(value); Base::on_change.notify(); }
     ObservableValue & operator=(const T &other){ set(other); }
     ObservableValue & operator=(T &&other){ set(other); }
     
