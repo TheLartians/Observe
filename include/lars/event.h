@@ -45,10 +45,15 @@ namespace lars{
     std::vector<Observer> observers;
   public:
     void add_observer(Observer && l){ observers.emplace_back(std::move(l)); }
+    
     template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
       observers.emplace_back();
       observers.back().observe(event,handler);
     }
+    
+    void clear_observers(){ observers.clear(); }
+    void pop_observers(){ observers.pop_back(); }
+    
   };
   
   template <typename ... Args> class Event:private std::shared_ptr<Event<Args...>*>{
