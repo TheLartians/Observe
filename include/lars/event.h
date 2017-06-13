@@ -6,6 +6,8 @@
 #include <vector>
 #include <utility>
 
+#include <iostream>
+
 namespace lars{
   
   template <typename ... Args> class Event;
@@ -166,9 +168,13 @@ namespace lars{
   
   template <class T,class Base = ObservableValueWithChangeEventBase> class ObservableValueWithChangeEvent:public ObservableValue<T,Base>{
   private:
-  public:
     T previous_value;
-    ObservableValueWithChangeEvent(){ this->on_set.connect([this](){ if(previous_value != this->get()){ Base::on_change.notify(); previous_value = this->get(); }  }); }
+  public:
+    ObservableValueWithChangeEvent(){
+      this->on_set.connect([this](){
+        if(previous_value != this->get()){ Base::on_change.notify(); previous_value = this->get(); }
+      });
+    }
   };
 
   template <class T,class Base = ObservableValueBase> class SharedObservableValue:public std::shared_ptr<ObservableValue<T,Base>>{
