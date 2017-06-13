@@ -137,6 +137,10 @@ namespace lars{
   };
   
   struct ObservableValueBase{
+    Event<> on_set;
+  };
+  
+  struct ObservableValueWithChangeEventBase:public ObservableValueBase{
     Event<> on_change;
   };
   
@@ -151,23 +155,25 @@ namespace lars{
     
     operator const T &()const{ return get(); }
     
-    void set(const T &other){ auto tmp = other; converter(tmp); if(value != tmp){ std::swap(value,tmp); Base::on_change.notify(); } }
-    void set(T && other){ converter(other); if(value != other){ value = std::forward<T>(other); Base::on_change.notify(); } }
+    void set(const T &other){ value = other; converter(value); Base::on_set.notify(); }
+    void set(T &&other){ value = std::forward<T>(other); converter(value); Base::on_set.notify(); }
     ObservableValue & operator=(const T &other){ set(other); }
-    ObservableValue & operator=(T &&other){ set(other); }
+    ObservableValue & operator=(T &&other){ set(std::forward<T>(other)); }
     
     void set_silently(const T &other){ value = other; converter(value); }
-    void set_silently(T &&other){ value = other; converter(value); }
+    void set_silently(T &&other){ value = std::forward<T>(other); converter(value); }
   };
   
+  template <class T,class Base = ObservableValueWithChangeEventBase> class ObservableValueWithChangeEvent:public ObservableValue<T,Base>{
+  private:
+  public:
+    T previous_value;
+    ObservableValueWithChangeEvent(){ this->on_set.connect([this](){ if(previous_value != this->get()){ Base::on_change.notify(); previous_value = this->get(); }  }); }
+  };
+
   template <class T,class Base = ObservableValueBase> class SharedObservableValue:public std::shared_ptr<ObservableValue<T,Base>>{
   public:
     using std::shared_ptr<ObservableValue<T,Base>>::shared_ptr;
-    
-    void replace_and_transfer_observers(const std::shared_ptr<ObservableValue<T,Base>> &other){
-      this->get()->on_change.transfer_observers_to(other->on_change);
-      *this = other;
-    }
   };
   
   template <class T,typename ... Args,class Base = ObservableValueBase> SharedObservableValue<T,Base> make_shared_observable_value(Args ... args){
