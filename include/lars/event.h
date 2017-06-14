@@ -174,12 +174,15 @@ namespace lars{
   template <class T,class Base = ObservableValueWithChangeEventBase> class ObservableValueWithChangeEvent:public ObservableValue<T,Base>{
   private:
     T previous_value;
-  public:
-    ObservableValueWithChangeEvent(){
+    
+    void init(){
       this->on_set.connect([this](){
         if(previous_value != this->get()){ Base::on_change.notify(); previous_value = this->get(); }
       });
     }
+    
+  public:
+    template <typename ... Args> ObservableValueWithChangeEvent(Args ... args):ObservableValue<T,Base>(std::forward<Args>(args)...){ init(); }
   };
 
   template <class T,class Base = ObservableValueBase> class SharedObservableValue:public std::shared_ptr<ObservableValue<T,Base>>{
