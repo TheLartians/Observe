@@ -51,8 +51,8 @@ namespace lars{
       observers.back().observe(event,handler);
     }
     
-    void clear_observers(){ observers.clear(); }
-    void pop_observers(){ observers.pop_back(); }
+    void clear_observer(){ observers.clear(); }
+    void pop_observer(){ observers.pop_back(); }
     
   };
   
