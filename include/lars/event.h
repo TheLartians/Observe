@@ -141,6 +141,10 @@ namespace lars{
       other.observers.splice(other.observers.end(),observers.begin(),observers.end());
     }
     
+    void clear_observers(){
+      observers.clear();
+    }
+    
   };
   
   struct ObservableValueBase{
