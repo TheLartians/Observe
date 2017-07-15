@@ -58,7 +58,7 @@ namespace lars{
   
   template <typename ... Args> class Event:private std::shared_ptr<Event<Args...>*>{
     
-    using Handler = std::function<void(Args...)>;
+    using Handler = std::function<void(const Args &...)>;
     using ObserverList = std::list<Handler>;
     using iterator = typename ObserverList::iterator;
     
