@@ -177,7 +177,7 @@ namespace lars{
   
   template <class T,class Base = ObservableValueWithChangeEventBase> class ObservableValueWithChangeEvent:public ObservableValue<T,Base>{
   private:
-    T previous_value;
+    T previous_value = T();
     
     void init(){
       this->on_set.connect([this](){
