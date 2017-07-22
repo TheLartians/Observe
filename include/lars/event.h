@@ -168,8 +168,8 @@ namespace lars{
     
     void set(const T &other){ value = other; converter(value); Base::on_set.notify(); }
     void set(T &&other){ value = std::forward<T>(other); converter(value); Base::on_set.notify(); }
-    ObservableValue & operator=(const T &other){ set(other); }
-    ObservableValue & operator=(T &&other){ set(std::forward<T>(other)); }
+    ObservableValue & operator=(const T &other){ set(other); return *this; }
+    ObservableValue & operator=(T &&other){ set(std::forward<T>(other)); return *this; }
     
     void set_silently(const T &other){ value = other; converter(value); }
     void set_silently(T &&other){ value = std::forward<T>(other); converter(value); }
