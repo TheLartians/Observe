@@ -6,8 +6,6 @@
 #include <vector>
 #include <utility>
 
-#include <iostream>
-
 namespace lars{
   
   template <typename ... Args> class Event;
