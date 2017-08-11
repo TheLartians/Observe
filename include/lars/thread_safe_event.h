@@ -4,12 +4,12 @@
 
 namespace lars{
 
-  template <typename ... Args> class ThreadSafeEvent:private std::shared_ptr<Event<Args...>*>{
+  template <typename ... Args> class ThreadSafeEvent:private std::shared_ptr<ThreadSafeEvent<Args...>*>{
     
     using Handler = std::function<void(const Args &...)>;
     using ObserverList = std::list<Handler>;
     using iterator = typename ObserverList::iterator;
-    std::mutex mutex;
+    mutable std::mutex mutex;
     
     mutable ObserverList observers;
     
