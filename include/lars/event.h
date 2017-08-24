@@ -191,6 +191,7 @@ namespace lars{
   template <class T,class Base = ObservableValueBase> class SharedObservableValue:public std::shared_ptr<ObservableValue<T,Base>>{
   public:
     using std::shared_ptr<ObservableValue<T,Base>>::shared_ptr;
+    SharedObservableValue(const std::shared_ptr<ObservableValue<T,Base>> &other):std::shared_ptr<ObservableValue<T,Base>>(other){}
   };
   
   template <class T,typename ... Args,class Base = ObservableValueBase> SharedObservableValue<T,Base> make_shared_observable_value(Args ... args){
