@@ -123,14 +123,20 @@ namespace lars{
     Event & operator=(Event &&) = default;
     
     void notify(Args... args)const{
-      for(auto &f:observers) f(args...);
+      for(auto it = observers.begin();it != observers.end();){
+        auto &f = *it;
+        auto next = it;
+        ++next;
+        f(args...);
+        it = next;
+      }
     }
     
-    Observer create_observer(Handler h)const{
+    Observer create_observer(const Handler &h)const{
       return Observer(*this,h);
     }
     
-    void connect(Handler h)const{
+    void connect(const Handler &h)const{
       insert_handler(h);
     }
     
