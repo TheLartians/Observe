@@ -162,7 +162,7 @@ namespace lars{
   template <class T,class Base = ObservableValueBase> class ObservableValue:public Base{
     T value;
     public:
-    std::function<void(T &)> converter = [](T &){};
+    std::function<void(T &)> converter;
     
     template <typename ... Args> ObservableValue(Args ... args):value(std::forward<Args>(args)...){}
     
@@ -170,13 +170,13 @@ namespace lars{
     
     operator const T &()const{ return get(); }
     
-    void set(const T &other){ value = other; converter(value); Base::on_set.notify(); }
-    void set(T &&other){ value = std::forward<T>(other); converter(value); Base::on_set.notify(); }
+    void set(const T &other){ value = other; if(converter) converter(value); Base::on_set.notify(); }
+    void set(T &&other){ value = std::forward<T>(other); if(converter) converter(value); Base::on_set.notify(); }
     ObservableValue & operator=(const T &other){ set(other); return *this; }
     ObservableValue & operator=(T &&other){ set(std::forward<T>(other)); return *this; }
     
-    void set_silently(const T &other){ value = other; converter(value); }
-    void set_silently(T &&other){ value = std::forward<T>(other); converter(value); }
+    void set_silently(const T &other){ value = other; if(converter) converter(value); }
+    void set_silently(T &&other){ value = std::forward<T>(other); if(converter) converter(value); }
   };
   
   template <class T,class Base = ObservableValueWithChangeEventBase> class ObservableValueWithChangeEvent:public ObservableValue<T,Base>{
