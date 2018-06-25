@@ -14,26 +14,26 @@ struct GuiElement{
 
 int main(int argc, char **argv) {
   GuiElement A,B;
-  ClickEvent::Listener listener_1;
-  // pseudo-base class can hold any type of listener
-  Listener listener_2;
+  ClickEvent::Observer observer_1;
+  // pseudo-base class can hold any type of observer
+  Observer observer_2;
   
-  listener_1.observe(A.clicked,[](float x,float y){ cout << "l1 : A clicked at " << x << ", " << y << endl; });
-  listener_2.observe(B.clicked,[](float x,float y){ cout << "l2 : B clicked at " << x << ", " << y << endl; });
+  observer_1.observe(A.clicked,[](float x,float y){ cout << "observer 1 : A clicked at " << x << ", " << y << endl; });
+  observer_2.observe(B.clicked,[](float x,float y){ cout << "observer 2 : B clicked at " << x << ", " << y << endl; });
   
-  // anonymous listener
+  // anonymous observer
   B.clicked.connect([](float x,float y){ cout << "   : B clicked at " << x << ", " << y << endl; });
   
   {
-  auto temporary_listener = A.clicked.create_listener([](float x,float y){ cout << "tmp: A clicked at " << x << ", " << y << endl; });
-  cout << "A has two listeners, B has two listeners" << endl;
+  auto temporary_observer = A.clicked.create_observer([](float x,float y){ cout << "tmp observer: A clicked at " << x << ", " << y << endl; });
+  cout << "A has two observers, B has two observers" << endl;
   A.mouse_down(1, 0);
   B.mouse_down(0, 1);
   }
 
-  listener_2 = move(listener_1);
+  observer_2 = move(observer_1);
   
-  cout << "A has one listener, B has one listener" << endl;
+  cout << "A has one observer, B has one observer" << endl;
   A.mouse_down(2, 0);
   B.mouse_down(0, 2);
 }
