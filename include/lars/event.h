@@ -122,7 +122,7 @@ namespace lars{
     Event & operator=(const Event &) = delete;
     Event & operator=(Event &&) = default;
     
-    void notify(Args... args)const{
+    void notify(Args ... args)const{
       for(auto it = observers.begin();it != observers.end();){
         auto &f = *it;
         auto next = it;
