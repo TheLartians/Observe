@@ -8,7 +8,8 @@ project(LarsEvent
 )
 # ---- Configuration variables ----
 
-option(ENABLE_LarsEvent_TESTS "Enable tests" OFF)
+option(ENABLE_LARS_EVENT_TESTS "Enable tests" OFF)
+option(BUILD_LARS_EVENT_EXAMPLES "Enable examples" OFF)
 
 # ---- Include guards ----
 
@@ -78,9 +79,15 @@ install(
   DESTINATION include
 )
 
+# ---- Examples ----
+
+IF(${BUILD_LARS_EVENT_EXAMPLES})
+  add_subdirectory(examples)    
+ENDIF()
+
 # ---- Test ----
 
-if(${ENABLE_LarsEvent_TESTS})
+if(${ENABLE_LARS_EVENT_TESTS})
   ENABLE_TESTING()  
   add_subdirectory(tests)  
 endif()
