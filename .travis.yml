@@ -1,0 +1,50 @@
+
+language: cpp
+sudo: require
+
+common_sources: &all_sources
+  - ubuntu-toolchain-r-test
+  - llvm-toolchain-trusty
+  - llvm-toolchain-trusty-6.0
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons: &gcc8
+        apt:
+          sources: *all_sources
+          packages: 
+            - g++-8
+      env:
+        - MATRIX_EVAL="export CC=g++-8; export CXX=g++-8;"
+
+    - os: linux
+      compiler: clang
+      addons:
+          apt:
+              sources: *all_sources
+              packages:
+                - g++-8
+                - clang-6.0
+      env:
+        - MATRIX_EVAL="export CC=clang-6.0; export CXX=clang++-6.0;"
+
+before_install:
+  # Update compilers
+  - eval "${MATRIX_EVAL}"
+  - echo "CC=$CC CXX=$CXX"
+  # Install a supported cmake version (>= 3.5)
+  - wget -O cmake.sh https://cmake.org/files/v3.10/cmake-3.10.0-rc1-Linux-x86_64.sh 
+  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
+
+install:
+  - cmake -H. -Bbuild
+  - cmake --build build
+  - sudo cmake --build build --target install
+
+script:
+  - cmake -Htests -Bbuild/test  
+  - cmake --build build/test
+  - CTEST_OUTPUT_ON_FAILURE=1 cmake --build build/test --target test
+ 
