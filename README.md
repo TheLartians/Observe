@@ -2,5 +2,4 @@
 
 # lars::event
 
-A c++11 event-listener system template.
-
+A c++11 event-listener system template. See [Examples](https://github.com/TheLartians/Event/tree/master/examples) for usage.
