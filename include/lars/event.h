@@ -149,6 +149,10 @@ namespace lars{
       observers.clear();
     }
     
+    size_t observers_count() const {
+      return observers.size();
+    }
+
   };
   
   struct ObservableValueBase{
