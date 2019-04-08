@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # ---- Project ----
 
 project(LarsEvent 
-  VERSION 1.1
+  VERSION 1.0
   LANGUAGES CXX
 )
 
