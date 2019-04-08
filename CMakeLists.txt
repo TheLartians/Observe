@@ -22,11 +22,15 @@ if(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
 endif()
 
+# ---- Header target ----
+
+FILE(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/include/lars/*.h")
+add_library(LarsEvent-headers EXCLUDE_FROM_ALL ${headers})
+SET_TARGET_PROPERTIES(LarsEvent-headers PROPERTIES LINKER_LANGUAGE CXX)
+
 # ---- Create library ----
 
 add_library(LarsEvent INTERFACE)
-
-FILE(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/include/lars/*.h")
 target_sources(LarsEvent INTERFACE ${headers})
 
 target_include_directories(LarsEvent
