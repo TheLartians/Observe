@@ -31,7 +31,6 @@ SET_TARGET_PROPERTIES(LarsEvent-headers PROPERTIES LINKER_LANGUAGE CXX)
 # ---- Create library ----
 
 add_library(LarsEvent INTERFACE)
-target_sources(LarsEvent INTERFACE ${headers})
 
 target_include_directories(LarsEvent
   INTERFACE 
