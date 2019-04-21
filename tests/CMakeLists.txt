@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-# ---- Project ----
+# ---- Options ----
 
-project(Tests CXX)
+option(ENABLE_TEST_COVERAGE "Enable test coverage" OFF)
 
 # ---- Dependencies ----
 
@@ -25,10 +25,28 @@ FetchContent_MakeAvailable(Catch2)
 file(GLOB tests_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 add_executable(lars-event-tests ${tests_sources})
 target_link_libraries(lars-event-tests Catch2 LarsEvent)
-set_target_properties(lars-event-tests PROPERTIES CXX_STANDARD 17 COMPILE_FLAGS "-Wall -pedantic -Wextra -Werror")
+set_target_properties(lars-event-tests PROPERTIES CXX_STANDARD 17 COMPILE_FLAGS "-Wall -pedantic -Wextra")
+
+if (NOT ${ENABLE_TEST_COVERAGE}) # clang warns about unused coverage flag
+  set_target_properties(lars-event-tests PROPERTIES COMPILE_FLAGS "-Werror")
+endif()
+
 
 # ---- Add tests ----
 
 ENABLE_TESTING() 
 ADD_TEST(lars-event-tests lars-event-tests)
+# ---- code coverage ----
 
+if (${ENABLE_TEST_COVERAGE})
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CodeCoverage.cmake)
+  APPEND_COVERAGE_COMPILER_FLAGS()
+
+  set(COVERAGE_GCOVR_EXCLUDES ${Catch2_SOURCE_DIR} ${CMAKE_CURRENT_LIST_DIR})
+
+  SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(
+    NAME lars-event-tests-coverage
+    EXECUTABLE lars-event-tests
+    DEPENDENCIES lars-event-tests
+  )
+endif()

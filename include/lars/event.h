@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <memory>
-#include <list>
 #include <vector>
 #include <utility>
 
@@ -46,60 +45,53 @@ namespace lars{
   private:
 
     using Handler = std::function<void(const Args &...)>;
-    using HandlerList = std::list<Handler>;
+    using HandlerID = size_t;
+
+    struct StoredHandler {
+      HandlerID id;
+      Handler callback;
+    };
+
+    using HandlerList = std::vector<StoredHandler>;
     using EventPointer = std::shared_ptr<const Event *>;
     using WeakEventPointer = std::weak_ptr<const Event *>;
-    using iterator = typename HandlerList::iterator;
     
+    mutable HandlerID IDCounter = 0;
     mutable HandlerList observers;
     EventPointer self;
 
-    iterator addHandler(Handler h)const{
-      return observers.insert(observers.end(),h);
+    HandlerID addHandler(Handler h)const{
+      observers.emplace_back(StoredHandler{IDCounter,h});
+      return IDCounter++;
     }
     
-    void eraseHandler(const iterator &it)const{
-      observers.erase(it);
+    void eraseHandler(const HandlerID &id)const{
+      auto it = std::find_if(observers.begin(), observers.end(), [&](auto &o){ return o.id == id; });
+      if (it != observers.end()) {
+        observers.erase(it);
+      }
     }
     
   public:
     
     struct Observer:public lars::Observer::Base{
       WeakEventPointer parent;
-      typename HandlerList::iterator it;
+      HandlerID id;
       
-      Observer(){ }
-      
-      Observer(const EventPointer & s,Handler f){
-        observe(s,f);
+      Observer(){}
+      Observer(const EventPointer & _parent, HandlerID _id):parent(_parent), id(_id){
       }
       
-      Observer(Observer &&other){
-        parent = other.parent;
-        it = other.it;
-        other.parent.reset();
-      }
-      
+      Observer(Observer &&other) = default;
       Observer(const Observer &other) = delete;
       
       Observer & operator=(const Observer &other) = delete;
-      
-      Observer & operator=(Observer &&other){
-        reset();
-        parent = other.parent;
-        it = other.it;
-        other.parent.reset();
-        return *this;
-      }
-      
-      void observe(const EventPointer & s,Handler h){
-        reset();
-        parent = s;
-        it = (*s)->addHandler(h);
-      }
-      
+      Observer & operator=(Observer &&other)=default;
+            
       void reset(){
-        if(!parent.expired()) (*parent.lock())->eraseHandler(it);
+        if(!parent.expired()){ 
+          (*parent.lock())->eraseHandler(id); 
+        }
         parent.reset();
       }
       
@@ -107,11 +99,13 @@ namespace lars{
     };
     
     Event():self(std::make_shared<const Event *>(this)){
+      
     }
     
     Event(const Event &) = delete;
+
     Event(Event &&other){
-      *this = other;
+      *this = std::move(other);
     }
     
     Event & operator=(const Event &) = delete;
@@ -120,20 +114,22 @@ namespace lars{
       self = std::move(other.self);
       *self = this;
       observers = std::move(other.observers);
+      IDCounter = other.IDCounter;
+      return *this;
     }
     
-    void notify(Args ... args) const {
+    void trigger(Args ... args) const {
       for(auto it = observers.begin();it != observers.end();){
         auto &f = *it;
         auto next = it;
         ++next;
-        f(args...);
+        f.callback(args...);
         it = next;
       }
     }
     
     Observer createObserver(const Handler &h)const{
-      return Observer(self,h);
+      return Observer(self, addHandler(h));
     }
     
     void connect(const Handler &h)const{

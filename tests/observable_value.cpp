@@ -2,10 +2,14 @@
 
 #include <lars/observable_value.h>
 
+// instantiate templates for coverage
+template class lars::ObservableValue<int>;
+template class lars::DependentObservableValue<int,int,int>;
+
 TEST_CASE("Observable Value") {
   using namespace lars;
 
-  ObservableValue<int> value(0);
+  ObservableValue value(0);
 
   unsigned total = 0;
   value.onChange.connect([&](auto &v){ total+=v; });
@@ -37,6 +41,12 @@ TEST_CASE("Dependent Observable Value") {
   REQUIRE(*prod == 15);
   c.set(2);
   REQUIRE(*prod == 10);
-  
-  // TODO: test moving an observable value
+}
+
+TEST_CASE("Operators") {
+  using namespace lars;
+
+  struct A { int a = 0; };
+  ObservableValue<A> value;
+  REQUIRE(value->a == 0);
 }
