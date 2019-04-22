@@ -2,58 +2,108 @@
 
 #include <lars/event.h>
 
-TEST_CASE("ClickEvent") {
-  using namespace lars;
-  
-  using ClickEvent = Event<float,float>;
-  
-  struct GuiElement{
-    ClickEvent clicked;
-    void mouse_down(float x,float y){ clicked.notify(x, y); }
-  };
+using namespace lars;
 
-  GuiElement A,B;
-  ClickEvent::Observer observer_1;
-  // pseudo-base class can hold any type of observer
-  Observer observer_2;
-  
-  float ox = 0, oy = 0;
-  size_t o1Count = 0, o2Count = 0, o3Count = 0, o4Count = 0;
-  
-  observer_1.observe(A.clicked,[&](float x,float y){ REQUIRE(ox == x); REQUIRE(oy == y); o1Count++; });
-  observer_2.observe(B.clicked,[&](float x,float y){ REQUIRE(ox == x); REQUIRE(oy == y); o2Count++; });
-  REQUIRE(A.clicked.observers_count() == 1);
-  REQUIRE(B.clicked.observers_count() == 1);
+// instantiate template for coverage
+template class lars::Event<>;
 
-  do {
-    auto temporary_observer = A.clicked.create_observer([&](float x,float y){ REQUIRE(ox == x); REQUIRE(oy == y); o4Count++; });
-    REQUIRE(A.clicked.observers_count() == 2);
+TEST_CASE("Event"){
+
+  SECTION("connect and observe"){
+    lars::Event<> event;
+    REQUIRE(event.observerCount() == 0);
+    unsigned connectCount = 0, observeCount = 0;
+    event.connect([&](){ connectCount++; });
     
-    ox += 1;
-    A.mouse_down(ox, oy);
-    
-    // anonymous observer
-    B.clicked.connect([&](float x,float y){ REQUIRE(ox == x); REQUIRE(oy == y); o3Count++; });
-    REQUIRE(A.clicked.observers_count() == 2);
-    REQUIRE(B.clicked.observers_count() == 2);
+    SECTION("reset observer"){
+      lars::Event<>::Observer observer;
+      observer = event.createObserver([&](){ observeCount++; });
+      for (int i=0; i<10; ++i) { event.emit(); }
+      REQUIRE(event.observerCount() == 2);
+      observer.reset();
+      REQUIRE(event.observerCount() == 1);
+      for (int i=0; i<10; ++i) { event.emit(); }
+      REQUIRE(observeCount == 10);
+      REQUIRE(connectCount == 20);
+    }
 
-    oy += 1;
-    B.mouse_down(ox, oy);
-  } while (0);
-  
-  observer_2 = std::move(observer_1);
-  
-  REQUIRE(A.clicked.observers_count() == 1);
-  REQUIRE(B.clicked.observers_count() == 1);
-  
-  ox += 1;
-  A.mouse_down(ox, oy);
-  oy += 1;
-  B.mouse_down(ox, oy);
+    SECTION("scoped observer"){
+      SECTION("lars::Observer"){
+        lars::Observer observer;
+        observer.observe(event, [&](){ observeCount++; });
+        REQUIRE(event.observerCount() == 2);
+        for (int i=0; i<10; ++i) { event.emit(); }
+      }
+      SECTION("lars::Event<>::Observer"){
+        lars::Event<>::Observer observer;
+        observer.observe(event, [&](){ observeCount++; });
+        REQUIRE(event.observerCount() == 2);
+        for (int i=0; i<10; ++i) { event.emit(); }
+      }
+      REQUIRE(event.observerCount() == 1);
+      for (int i=0; i<10; ++i) { event.emit(); }
+      REQUIRE(observeCount == 10);
+      REQUIRE(connectCount == 20);
+    }
 
-  REQUIRE(o1Count == 2);
-  REQUIRE(o2Count == 1);
-  REQUIRE(o3Count == 2);
-  REQUIRE(o4Count == 1);
+    SECTION("clear observers"){
+      lars::Observer observer = event.createObserver([&](){ observeCount++; });
+      event.clearObservers();
+      REQUIRE(event.observerCount() == 0);
+      event.emit();
+      REQUIRE(connectCount == 0);
+    }
+  }
+
+  SECTION("removing observer during emit"){
+    lars::Event<> event;
+    lars::Event<>::Observer observer;
+    unsigned count = 0;
+    observer = event.createObserver([&](){ observer.reset(); count++; });
+    event.emit();
+    REQUIRE(count == 1);
+    event.emit();
+    REQUIRE(count == 1);
+  }
+
+  SECTION("adding observers during emit"){
+    lars::Event<> event;
+    std::function<void()> callback;
+    callback = [&](){ event.connect(callback); };
+    event.connect(callback);
+    REQUIRE(event.observerCount() == 1);
+    event.emit();
+    REQUIRE(event.observerCount() == 2);
+    event.emit();
+    REQUIRE(event.observerCount() == 4);
+  }
+
+  SECTION("emit data"){
+    lars::Event<int, int> event;
+    int sum = 0;
+    event.connect([&](auto a, auto b){ sum = a + b; });
+    event.emit(2,3);
+    REQUIRE(sum == 5);
+  }
+
+  SECTION("move"){
+    lars::Observer observer;
+    int result = 0;
+    lars::Event<int> event;
+    {
+      lars::Event<int> tmpEvent;
+      observer = tmpEvent.createObserver([&](auto i){ result = i; });
+      tmpEvent.emit(5);
+      REQUIRE(result == 5);
+      event = Event(std::move(tmpEvent));
+      REQUIRE(tmpEvent.observerCount() == 0);
+    }
+    REQUIRE(event.observerCount() == 1);
+    event.emit(3);
+    REQUIRE(result == 3);
+    observer.reset();
+    REQUIRE(event.observerCount() == 0);
+  }
 
 }
+
