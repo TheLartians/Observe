@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/TheLartians/Event.svg?branch=master)](https://travis-ci.com/TheLartians/Event)
+[![codecov](https://codecov.io/gh/TheLartians/Event/branch/master/graph/badge.svg)](https://codecov.io/gh/TheLartians/Event)
 
 # lars::Event
 
