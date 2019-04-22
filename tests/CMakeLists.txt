@@ -39,7 +39,20 @@ ADD_TEST(lars-event-tests lars-event-tests)
 # ---- code coverage ----
 
 if (${ENABLE_TEST_COVERAGE})
-  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CodeCoverage.cmake)
+
+  FetchContent_Declare(
+    extra-cmake-modules
+    GIT_REPOSITORY https://github.com/bilke/cmake-modules
+    GIT_TAG        5893e3eb3aaec104f86ba81ee90b7e9279b74c3f
+  )
+
+  if(NOT extra-cmake-modules_POPULATED)
+    FetchContent_Populate(extra-cmake-modules)
+    message("test 1: ${extra-cmake-modules_SOURCE_DIR}")
+    message("test 2: ${extra-cmake-modules_POPULATED}")
+    include(${extra-cmake-modules_SOURCE_DIR}/CodeCoverage.cmake)
+  endif()
+  
   APPEND_COVERAGE_COMPILER_FLAGS()
 
   set(COVERAGE_GCOVR_EXCLUDES ${Catch2_SOURCE_DIR} ${CMAKE_CURRENT_LIST_DIR})
