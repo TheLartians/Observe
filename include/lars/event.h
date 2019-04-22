@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <mutex>
 
 namespace lars{
   
@@ -53,18 +54,19 @@ namespace lars{
     
     mutable HandlerID IDCounter = 0;
     mutable HandlerList observers;
+    mutable std::mutex observerMutex;
     EventPointer self;
 
     HandlerID addHandler(Handler h)const{
+      std::lock_guard<std::mutex> lock(observerMutex);
       observers.emplace_back(StoredHandler{IDCounter,h});
       return IDCounter++;
     }
     
     void eraseHandler(const HandlerID &id)const{
+      std::lock_guard<std::mutex> lock(observerMutex);
       auto it = std::find_if(observers.begin(), observers.end(), [&](auto &o){ return o.id == id; });
-      if (it != observers.end()) {
-        observers.erase(it);
-      }
+      if (it != observers.end()) { observers.erase(it); }
     }
     
   public:
@@ -118,12 +120,11 @@ namespace lars{
     }
     
     void emit(Args ... args) const {
-      for(auto it = observers.begin();it != observers.end();){
-        auto &f = *it;
-        auto next = it;
-        ++next;
-        f.callback(args...);
-        it = next;
+      observerMutex.lock();
+      auto tmpObservers = observers;
+      observerMutex.unlock();
+      for(auto &observer: tmpObservers){
+        observer.callback(args...);
       }
     }
     
@@ -136,10 +137,12 @@ namespace lars{
     }
     
     void clearObservers(){
+      std::lock_guard<std::mutex> lock(observerMutex);
       observers.clear();
     }
     
     size_t observerCount() const {
+      std::lock_guard<std::mutex> lock(observerMutex);
       return observers.size();
     }
 

@@ -55,7 +55,27 @@ TEST_CASE("Event"){
     }
   }
 
-  SECTION("scoped event"){
+  SECTION("removing observer during emit"){
+    lars::Event<> event;
+    lars::Event<>::Observer observer;
+    unsigned count = 0;
+    observer = event.createObserver([&](){ observer.reset(); count++; });
+    event.emit();
+    REQUIRE(count == 1);
+    event.emit();
+    REQUIRE(count == 1);
+  }
+
+  SECTION("adding observers during emit"){
+    lars::Event<> event;
+    std::function<void()> callback;
+    callback = [&](){ event.connect(callback); };
+    event.connect(callback);
+    REQUIRE(event.observerCount() == 1);
+    event.emit();
+    REQUIRE(event.observerCount() == 2);
+    event.emit();
+    REQUIRE(event.observerCount() == 4);
   }
 
   SECTION("emit data"){

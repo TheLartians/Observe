@@ -5,8 +5,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <iostream>
-
 namespace lars {
 
   template <class T> class ObservableValue {
@@ -54,7 +52,7 @@ namespace lars {
       const ObservableValue<D> & ... deps
     ): 
       ObservableValue<T>(handler(deps.get()...)),
-      observers(std::make_tuple(deps.onChange.createObserver([&,this](const auto &v){
+      observers(std::make_tuple(deps.onChange.createObserver([&,this](const auto &){
         this->set(handler(deps.get()...));
       })...))
     {

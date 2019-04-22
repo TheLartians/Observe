@@ -48,8 +48,6 @@ if (${ENABLE_TEST_COVERAGE})
 
   if(NOT extra-cmake-modules_POPULATED)
     FetchContent_Populate(extra-cmake-modules)
-    message("test 1: ${extra-cmake-modules_SOURCE_DIR}")
-    message("test 2: ${extra-cmake-modules_POPULATED}")
     include(${extra-cmake-modules_SOURCE_DIR}/CodeCoverage.cmake)
   endif()
   
