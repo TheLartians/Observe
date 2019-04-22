@@ -43,6 +43,9 @@ TEST_CASE("Dependent Observable Value") {
   REQUIRE(*prod == 15);
   c.set(2);
   REQUIRE(*prod == 10);
+
+  c.setSilently(3);
+  REQUIRE(*prod == 10);
 }
 
 TEST_CASE("Operators") {

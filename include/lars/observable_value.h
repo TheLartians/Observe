@@ -25,6 +25,10 @@ namespace lars {
       value = T(std::forward<Args>(args)...);
       onChange.emit(value);
     }
+
+    template <typename ... Args> void setSilently(Args ... args){ 
+      value = T(std::forward<Args>(args)...);
+    }
     
     const T & get()const{ 
       return value;
