@@ -24,8 +24,9 @@ observer.reset(); // removes observer from event
 lars::ObservableValue a = 1;
 lars::ObservableValue b = 2;
 lars::DependentObservableValue sum([](auto a, auto b){ return a+b; },a,b);
-sum.onChange.connect([](auto &v){ std::cout << "The result is " << r << std::endl; });
-a.set(3); // -> "The result is 5"
+sum.onChange.connect([](auto &v){ std::cout << "The result changed to " << r << std::endl; });
+std::cout << "The result is " << *sum << std::endl; // -> the result is 3
+a.set(3); // -> The result changed to 5
 ```
 
 # Installation and usage
