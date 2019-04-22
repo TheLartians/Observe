@@ -19,7 +19,7 @@ namespace lars {
 
     template <typename ... Args> void set(Args ... args){ 
       value = T(std::forward<Args>(args)...);
-      onChange.trigger(value);
+      onChange.emit(value);
     }
     
     const T & get()const{ 

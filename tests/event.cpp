@@ -18,23 +18,30 @@ TEST_CASE("Event"){
     SECTION("reset observer"){
       lars::Event<>::Observer observer;
       observer = event.createObserver([&](){ observeCount++; });
-      for (int i=0; i<10; ++i) { event.trigger(); }
+      for (int i=0; i<10; ++i) { event.emit(); }
       REQUIRE(event.observerCount() == 2);
       observer.reset();
       REQUIRE(event.observerCount() == 1);
-      for (int i=0; i<10; ++i) { event.trigger(); }
+      for (int i=0; i<10; ++i) { event.emit(); }
       REQUIRE(observeCount == 10);
       REQUIRE(connectCount == 20);
     }
 
     SECTION("scoped observer"){
-      {
-        lars::Observer observer = event.createObserver([&](){ observeCount++; });
+      SECTION("lars::Observer"){
+        lars::Observer observer;
+        observer.observe(event, [&](){ observeCount++; });
         REQUIRE(event.observerCount() == 2);
-        for (int i=0; i<10; ++i) { event.trigger(); }
+        for (int i=0; i<10; ++i) { event.emit(); }
+      }
+      SECTION("lars::Event<>::Observer"){
+        lars::Event<>::Observer observer;
+        observer.observe(event, [&](){ observeCount++; });
+        REQUIRE(event.observerCount() == 2);
+        for (int i=0; i<10; ++i) { event.emit(); }
       }
       REQUIRE(event.observerCount() == 1);
-      for (int i=0; i<10; ++i) { event.trigger(); }
+      for (int i=0; i<10; ++i) { event.emit(); }
       REQUIRE(observeCount == 10);
       REQUIRE(connectCount == 20);
     }
@@ -43,7 +50,7 @@ TEST_CASE("Event"){
       lars::Observer observer = event.createObserver([&](){ observeCount++; });
       event.clearObservers();
       REQUIRE(event.observerCount() == 0);
-      event.trigger();
+      event.emit();
       REQUIRE(connectCount == 0);
     }
   }
@@ -55,7 +62,7 @@ TEST_CASE("Event"){
     lars::Event<int, int> event;
     int sum = 0;
     event.connect([&](auto a, auto b){ sum = a + b; });
-    event.trigger(2,3);
+    event.emit(2,3);
     REQUIRE(sum == 5);
   }
 
@@ -66,13 +73,13 @@ TEST_CASE("Event"){
     {
       lars::Event<int> tmpEvent;
       observer = tmpEvent.createObserver([&](auto i){ result = i; });
-      tmpEvent.trigger(5);
+      tmpEvent.emit(5);
       REQUIRE(result == 5);
       event = Event(std::move(tmpEvent));
       REQUIRE(tmpEvent.observerCount() == 0);
     }
     REQUIRE(event.observerCount() == 1);
-    event.trigger(3);
+    event.emit(3);
     REQUIRE(result == 3);
     observer.reset();
     REQUIRE(event.observerCount() == 0);

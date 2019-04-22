@@ -14,24 +14,19 @@ namespace lars{
     struct Base{ virtual ~Base(){} };
     
     Observer(){}
-    Observer(Observer &&other){ std::swap(data,other.data); }
+    Observer(Observer &&other) = default;
     template <typename L> Observer(L && l):data(new L(std::move(l))){ }
     
     Observer & operator=(const Observer &other) = delete;
-
-    Observer & operator=(Observer &&other){
-      data.reset();
-      std::swap(data,other.data);
-      return *this;
-    }
+    Observer & operator=(Observer &&other) = default;
     
     template <typename L> Observer & operator=(L && l){ 
       data.reset(new L(std::move(l))); 
       return *this; 
     }
     
-    template <typename H,typename ... Args> void observe(Event<Args...> & event,H handler){
-      data.reset(new typename Event<Args...>::Observer(event,handler));
+    template <typename H,typename ... Args> void observe(Event<Args...> & event,const H &handler){
+      data.reset(new typename Event<Args...>::Observer(event.createObserver(handler)));
     }
     
     void reset(){ data.reset(); }
@@ -87,7 +82,11 @@ namespace lars{
       
       Observer & operator=(const Observer &other) = delete;
       Observer & operator=(Observer &&other)=default;
-            
+      
+      void observe(const Event &event, const Handler &handler){
+        *this = event.createObserver(handler);
+      }
+
       void reset(){
         if(!parent.expired()){ 
           (*parent.lock())->eraseHandler(id); 
@@ -118,7 +117,7 @@ namespace lars{
       return *this;
     }
     
-    void trigger(Args ... args) const {
+    void emit(Args ... args) const {
       for(auto it = observers.begin();it != observers.end();){
         auto &f = *it;
         auto next = it;
