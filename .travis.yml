@@ -67,7 +67,11 @@ after_success:
   - cmake --build build/coverage --target test
   # collect coverage data
   - lcov --gcov-tool $(which gcov-8) --directory . --capture --output-file coverage.info
+  # remove lib files
   - lcov --gcov-tool $(which gcov-8) --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
+  # remove test files
+  - lcov --gcov-tool $(which gcov-8) --remove coverage.info $(pwd)/tests/*.cpp  --output-file coverage.info
+  # print coverage info
   - lcov --gcov-tool $(which gcov-8) --list coverage.info
   # upload coverage data
   - bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
