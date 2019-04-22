@@ -2,9 +2,11 @@
 
 # lars::Event
 
-A thread-safe C++11 event-listener template and observable value implementation.
+A thread-safe event-listener template and observable value implementation for C++17.
 
-# Example
+# Examples
+
+Full examples can be found in the [examples directory](https://github.com/TheLartians/Event/tree/master/examples).
 
 ## lars::Event
 
@@ -18,11 +20,11 @@ observer.reset(); // removes observer from event
 ## lars::ObservableValue
 
 ```c++
-ObservableValue a = 1;
-ObservableValue b = 2;
-DependentObservableValue sum([](auto a, auto b){ return a+b; },a,b);
-DependentObservableValue resultString([](auto v){ return "The result is " + std::to_string(v); }, sum);
-resultString.onChange.connect([](auto &r){ std::cout << r << std::endl; });
+lars::ObservableValue a = 1;
+lars::ObservableValue b = 2;
+lars::DependentObservableValue sum([](auto a, auto b){ return a+b; },a,b);
+sum.onChange.connect([](auto &v){ std::cout << "The result is " << r << std::endl; });
+a.set(3); // -> "The result is 5"
 ```
 
 # Installation and usage
