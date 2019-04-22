@@ -61,4 +61,4 @@ after_success:
   - cmake -H. -Bbuild/coverage -DCMAKE_BUILD_TYPE=Debug -DLARS_EVENT_ENABLE_TESTS=On -DENABLE_TEST_COVERAGE=On
   - cmake --build build/coverage
   - cmake --build build/coverage --target lars-event-tests-coverage
-  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+  - bash <(curl -s https://codecov.io/bash) --gcov gcov-8 || echo "Codecov did not collect coverage reports"
