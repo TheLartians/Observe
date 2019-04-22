@@ -24,19 +24,21 @@ TEST_CASE("Dependent Observable Value") {
   using namespace lars;
 
   ObservableValue a(1);
-  ObservableValue b(2);
+  ObservableValue b(1);
   DependentObservableValue sum([](auto a, auto b){ return a+b; },a,b);
 
-  REQUIRE(*sum == 3);
+  REQUIRE(*sum == 2);
   a.set(2);
-  REQUIRE(*sum == 4);
+  REQUIRE(*sum == 3);
+  b.set(3);
+  REQUIRE(*sum == 5);
 
   ObservableValue c(3);
   DependentObservableValue prod([](auto a, auto b){ return a*b; },sum,c);
 
-  REQUIRE(*prod == 12);
+  REQUIRE(*prod == 15);
   a.set(1);
-  REQUIRE(*prod == 9);
+  REQUIRE(*prod == 12);
   b.set(4);
   REQUIRE(*prod == 15);
   c.set(2);
