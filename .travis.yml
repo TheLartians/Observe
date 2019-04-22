@@ -16,6 +16,7 @@ matrix:
           sources: *all_sources
           packages: 
             - g++-8
+            - lcov
       env:
         - MATRIX_EVAL="export CC=gcc-8; export CXX=g++-8;"
 
@@ -27,6 +28,7 @@ matrix:
               packages:
                 - g++-8
                 - clang-6.0
+                - lcov
       env:
         - MATRIX_EVAL="export CC=clang-6.0; export CXX=clang++-6.0;"
 
@@ -53,6 +55,8 @@ script:
   # examples
   - cmake -Hexamples -Bbuild/examples  
   - cmake --build build/examples
+
+after_success:
   # coverage
   - cmake -H. -Bbuild/coverage -DCMAKE_BUILD_TYPE=Debug -DLARS_EVENT_ENABLE_TESTS=On -DENABLE_TEST_COVERAGE=On
   - cmake --build build/coverage
