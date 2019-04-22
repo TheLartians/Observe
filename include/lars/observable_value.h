@@ -20,6 +20,9 @@ namespace lars {
     template <typename ... Args> ObservableValue(Args ... args):value(std::forward<Args>(args)...){
     }
 
+    ObservableValue(ObservableValue &&) = delete;
+    ObservableValue &operator=(ObservableValue &&) = delete;
+
     template <typename ... Args> void set(Args ... args){ 
       value = T(std::forward<Args>(args)...);
       onChange.emit(value);
@@ -43,35 +46,20 @@ namespace lars {
 
   template <class T, typename ... D> class DependentObservableValue: public ObservableValue<T> {
   private:
-    std::tuple<const D * ...> values;
     std::tuple<typename ObservableValue<D>::OnChange::Observer ...> observers;
-
-    template <class H, size_t ... Idx> DependentObservableValue(
-      std::index_sequence<Idx...> const &,
-      const H &handler,
-      const ObservableValue<D> & ... deps
-    ):ObservableValue<T>(handler(deps.get()...)){
-      
-      values = std::make_tuple(&deps.get() ...);
-      auto callHandler = [handler](const D * ... v){ return handler(*v...); };
-      auto update = [this, callHandler](){
-        this->set(std::apply(callHandler, values)); 
-      };
-
-      update();
-      
-      observers = (std::make_tuple(deps.onChange.createObserver([this,update](const auto &v){
-        std::get<Idx>(values) = &v;
-        update();
-      })...));
-    }
   
   public:
-
     template <class H> DependentObservableValue(
       const H &handler,
       const ObservableValue<D> & ... deps
-    ): DependentObservableValue(std::make_index_sequence<sizeof...(D)>(), handler, deps...) { }
+    ): 
+      ObservableValue<T>(handler(deps.get()...)),
+      observers(std::make_tuple(deps.onChange.createObserver([&,this](const auto &v){
+        this->set(handler(deps.get()...));
+      })...))
+    {
+
+    }
 
   };
 
