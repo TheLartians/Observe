@@ -9,7 +9,7 @@ using ClickEvent = Event<float,float>;
 
 struct GuiElement{
   ClickEvent clicked;
-  void mouse_down(float x,float y){ clicked.notify(x, y); }
+  void mouse_down(float x,float y){ clicked.emit(x, y); }
 };
 
 int main(int argc, char **argv) {
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
   });
   
   {
-  auto temporary_observer = A.clicked.create_observer([](float x,float y){
+  auto temporary_observer = A.clicked.createObserver([](float x,float y){
     cout << "tmp observer: A clicked at " << x << ", " << y << endl;
   });
   cout << "A has two observers, B has two observers" << endl;
