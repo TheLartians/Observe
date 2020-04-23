@@ -48,7 +48,7 @@ void example() {
 }
 ```
 
-Note that events and observers are thread and exception safe. 
+Note that events and observers are thread and exception safe, though any thrown exception will propagate out of the `event.emit()` call.
 
 ### Using observe::Value
 
